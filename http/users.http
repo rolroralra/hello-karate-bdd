@@ -1,0 +1,97 @@
+### Hello Karate BDD — User API
+### IntelliJ IDEA HTTP Client 테스트 파일
+### 사용법: 각 요청 왼쪽의 ▶ 버튼을 클릭하거나 Ctrl+Shift+F10 (Mac: Cmd+Shift+F10)
+
+# 환경 변수는 http/http-client.env.json 에서 관리합니다.
+# 현재 파일은 @baseUrl 변수를 사용합니다.
+
+@baseUrl = http://localhost:8080
+
+### ──────────────────────────────────────────────
+### 1. 사용자 목록 조회 (GET /api/users)
+### ──────────────────────────────────────────────
+
+GET {{baseUrl}}/api/users
+Accept: application/json
+
+### ──────────────────────────────────────────────
+### 2. 사용자 생성 (POST /api/users)
+### ──────────────────────────────────────────────
+
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Alice",
+  "email": "alice@example.com"
+}
+
+### ──────────────────────────────────────────────
+### 3. 특정 사용자 조회 (GET /api/users/{id})
+### ──────────────────────────────────────────────
+### ID 를 실제 생성된 값으로 바꾸세요.
+
+GET {{baseUrl}}/api/users/1
+Accept: application/json
+
+### ──────────────────────────────────────────────
+### 4. 사용자 수정 (PUT /api/users/{id})
+### ──────────────────────────────────────────────
+
+PUT {{baseUrl}}/api/users/1
+Content-Type: application/json
+
+{
+  "name": "Alice Updated",
+  "email": "alice.updated@example.com"
+}
+
+### ──────────────────────────────────────────────
+### 5. 사용자 삭제 (DELETE /api/users/{id})
+### ──────────────────────────────────────────────
+
+DELETE {{baseUrl}}/api/users/1
+
+### ──────────────────────────────────────────────
+### 6. 존재하지 않는 사용자 조회 → 404 확인
+### ──────────────────────────────────────────────
+
+GET {{baseUrl}}/api/users/999999
+Accept: application/json
+
+### ──────────────────────────────────────────────
+### 7. 유효성 검사 — 이름 없이 생성 → 400 확인
+### ──────────────────────────────────────────────
+
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "noname@example.com"
+}
+
+### ──────────────────────────────────────────────
+### 8. 유효성 검사 — 잘못된 이메일 → 400 확인
+### ──────────────────────────────────────────────
+
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Charlie",
+  "email": "not-an-email"
+}
+
+### ──────────────────────────────────────────────
+### 9. 중복 이메일 생성 → 400 확인
+### ──────────────────────────────────────────────
+### 먼저 위의 사용자 생성(2번)을 실행한 후 아래를 실행하세요.
+
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "Alice Clone",
+  "email": "alice@example.com"
+}
