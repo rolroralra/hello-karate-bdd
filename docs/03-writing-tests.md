@@ -234,17 +234,15 @@ Karate 는 실행 후 자동으로 HTML 리포트를 생성합니다.
 
 ```
 build/
+├── karate-reports/
+│   └── karate-summary.html  # Karate 전용 리포트 (요청/응답까지 상세)
 ├── reports/
 │   └── tests/test/          # JUnit HTML 리포트
-└── surefire-reports/        # XML 리포트 (CI 용)
+└── test-results/
+    └── test/                # JUnit XML 리포트 (CI 용)
 ```
 
-Karate 전용 리포트 (더 상세):
-```
-target/karate-reports/       # Maven 기준
-```
-
-Gradle 에서는 Karate 리포트가 `build/` 하위에 생성됩니다.
+Maven 프로젝트에서는 Karate 리포트가 `target/karate-reports/` 에 생성됩니다.
 
 ---
 
@@ -281,4 +279,4 @@ Gradle 에서는 Karate 리포트가 `build/` 하위에 생성됩니다.
 
 | | |
 |---|---|
-| 이전: [← 02. 프로젝트 구조 설명](02-project-structure.md) | |
+| 이전: [← 02. 프로젝트 구조 설명](02-project-structure.md) | 다음: [04. Karate 문법 친절 가이드 →](04-karate-syntax-guide.md) |

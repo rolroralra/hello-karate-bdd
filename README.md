@@ -50,7 +50,7 @@ Spring Boot Docker Compose Support 가 자동으로 `compose.yaml` 를 읽어 Po
 
 ```
 build/reports/tests/test/index.html   - JUnit HTML 리포트
-build/reports/karate/               - Karate HTML 리포트 (feature 별 상세)
+build/karate-reports/karate-summary.html - Karate HTML 리포트 (feature 별 상세)
 ```
 
 ## API 엔드포인트
@@ -88,7 +88,9 @@ hello-karate-bdd/
 ├── docs/                                 # 상세 문서
 │   ├── 01-karate-overview.md
 │   ├── 02-project-structure.md
-│   └── 03-writing-tests.md
+│   ├── 03-writing-tests.md
+│   ├── 04-karate-syntax-guide.md
+│   └── 05-karate-practical-guide.md
 └── src/
     ├── main/
     │   ├── java/com/example/karatebdd/
@@ -117,6 +119,8 @@ hello-karate-bdd/
 - [01. Karate 개요](docs/01-karate-overview.md)
 - [02. 프로젝트 구조 설명](docs/02-project-structure.md)
 - [03. 테스트 작성 가이드](docs/03-writing-tests.md)
+- [04. Karate 문법 친절 가이드](docs/04-karate-syntax-guide.md)
+- [05. Karate 실전 사용법](docs/05-karate-practical-guide.md)
 ---
 
 | | |

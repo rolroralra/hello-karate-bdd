@@ -15,7 +15,9 @@ hello-karate-bdd/
 ├── docs/                                     # 상세 문서
 │   ├── 01-karate-overview.md                 # Karate 개요 및 문법 참조
 │   ├── 02-project-structure.md              # 이 파일 (프로젝트 구조)
-│   └── 03-writing-tests.md                  # 테스트 작성 가이드
+│   ├── 03-writing-tests.md                  # 테스트 작성 가이드
+│   ├── 04-karate-syntax-guide.md            # Karate 문법 친절 가이드
+│   └── 05-karate-practical-guide.md         # Karate 실전 사용법
 │
 ├── http/                                     # IntelliJ IDEA HTTP 클라이언트 파일
 │   ├── users.http                            # User API 수동 테스트
