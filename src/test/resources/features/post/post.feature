@@ -21,9 +21,9 @@ Feature: Post API
   # ──────────────────────────────────────────────
   Scenario: Post CRUD 전체 흐름
     # 1-1. 포스트 생성 (POST)
-    # authorId 는 따옴표 없이 사용해야 JSON number 로 전송됨
+    # '#(authorId)' 처럼 따옴표 안에 써도 원래 타입(number)이 그대로 유지되어 JSON number 로 전송됨
     Given path '/api/posts'
-    And request { title: 'Hello Karate', content: 'Karate is awesome!', authorId: #(authorId) }
+    And request { title: 'Hello Karate', content: 'Karate is awesome!', authorId: '#(authorId)' }
     When method POST
     Then status 201
     And match response.success == true
@@ -77,7 +77,7 @@ Feature: Post API
   # ──────────────────────────────────────────────
   Scenario: 포스트 목록 조회
     Given path '/api/posts'
-    And request { title: 'List Test Post', content: 'content', authorId: #(authorId) }
+    And request { title: 'List Test Post', content: 'content', authorId: '#(authorId)' }
     When method POST
     Then status 201
     * def postId = response.data.id
@@ -102,7 +102,7 @@ Feature: Post API
   # ──────────────────────────────────────────────
   Scenario: 제목 없이 포스트 생성 시 400 반환
     Given path '/api/posts'
-    And request { title: '', content: 'some content', authorId: #(authorId) }
+    And request { title: '', content: 'some content', authorId: '#(authorId)' }
     When method POST
     Then status 400
     And match response.success == false
