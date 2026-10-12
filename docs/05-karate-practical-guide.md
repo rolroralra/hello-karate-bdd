@@ -313,9 +313,23 @@ tasks.withType<Test> {
 
 # 패키지 단위
 ./gradlew test --tests 'com.example.karatebdd.post.*'
+
+# features 폴더 아래 전체 feature 를 한 러너로 (순차)
+./gradlew test --tests 'com.example.karatebdd.AllFeaturesTest'
+
+# 전체 feature 를 병렬로 (CI 용, 리포트: build/karate-reports)
+./gradlew test --tests 'com.example.karatebdd.AllFeaturesParallelTest'
 ```
 
 IntelliJ 에서는 러너 클래스(`UserApiTest`)의 메서드 옆 실행 버튼을 누르면 됩니다.
+
+| 러너 | 실행 범위 | 용도 |
+|------|-----------|------|
+| `UserApiTest`, `PostApiTest` | feature 1개 | 개발 중 해당 도메인만 빠르게 확인 |
+| `AllFeaturesTest` | `classpath:features` 전체, 순차 | 새 feature 를 추가해도 러너 추가 불필요, IDE 에서 Scenario 단위 결과 확인 |
+| `AllFeaturesParallelTest` | `classpath:features` 전체, 병렬 | CI 에서 빠르게 전체 실행 + 통합 리포트 |
+
+> 병렬 러너에서는 Scenario 들이 같은 DB 를 동시에 사용합니다. "전체 목록이 N개" 처럼 다른 Scenario 의 데이터에 영향을 받는 검증은 피하세요.
 
 ### 6-4. 태그로 묶어 실행하기
 

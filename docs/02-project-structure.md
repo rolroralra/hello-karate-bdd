@@ -55,6 +55,8 @@ hello-karate-bdd/
     │
     └── test/
         ├── java/com/example/karatebdd/
+        │   ├── AllFeaturesTest.java           # 전체 feature 통합 러너 (순차)
+        │   ├── AllFeaturesParallelTest.java   # 전체 feature 통합 러너 (병렬, CI 용)
         │   ├── user/
         │   │   └── UserApiTest.java           # Karate JUnit5 러너 (User)
         │   └── post/
