@@ -10,10 +10,11 @@
 1. feature 파일을 한 줄씩 읽는 법
 2. 변수와 데이터 타입
 3. JSON 만들고 고치기
-4. 응답에서 원하는 값 꺼내기
-5. `match` 완전 정복
-6. JavaScript / Java 함께 쓰기
-7. 초보자가 자주 하는 실수
+4. 요청 꾸미기 (header / param / cookie)
+5. 응답에서 원하는 값 꺼내기
+6. `match` 완전 정복
+7. JavaScript / Java 함께 쓰기
+8. 초보자가 자주 하는 실수
 
 ---
 
@@ -244,7 +245,98 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 
 ---
 
-## 5. 응답에서 원하는 값 꺼내기
+## 5. 요청 꾸미기: `header` / `param` / `cookie`
+
+`path`, `request` 외에도 요청에 헤더, 쿼리 파라미터, 쿠키를 붙일 수 있습니다.
+2장에서 본 것처럼 `Given` 이 설정하는 것이 아니라 **`header` 같은 키워드가 설정**합니다.
+`Given header`, `And header`, `* header` 는 모두 같습니다.
+
+### 5-1. 헤더 하나: `header`
+
+```gherkin
+* def token = 'test-token'
+
+Given path '/api/users'
+And header Authorization = 'Bearer ' + token
+And header X-Request-Id = java.util.UUID.randomUUID() + ''
+When method GET
+Then status 200
+```
+
+`=` 오른쪽은 JavaScript 표현식이라 변수와 문자열 연결을 그대로 쓸 수 있습니다.
+
+### 5-2. 헤더 여러 개: `headers`
+
+```gherkin
+Given path '/api/users'
+And headers { Authorization: '#("Bearer " + token)', 'X-Client': 'karate' }
+When method GET
+```
+
+- 키에 `-` 가 들어가면 `'X-Client'` 처럼 따옴표로 감쌉니다.
+- 값에 변수를 넣을 때는 4-1 의 임베디드 표현식 `'#( )'` 을 씁니다.
+
+### 5-3. 모든 요청에 공통으로: `configure headers`
+
+```gherkin
+Background:
+  * url baseUrl
+  * configure headers = { Authorization: 'Bearer test-token' }
+```
+
+이 프로젝트의 `karate-config.js` 도 같은 방식으로 모든 요청에 JSON 헤더를 붙이고 있습니다.
+
+```javascript
+karate.configure('headers', { 'Content-Type': 'application/json', 'Accept': 'application/json' });
+```
+
+### 5-4. 적용 범위가 다릅니다
+
+| 방법 | 적용 범위 |
+|------|-----------|
+| `header` / `headers` | **바로 다음 요청 1번만**. `method` 실행 후 초기화 |
+| `configure headers` | 이후의 **모든 요청**에 계속 적용 |
+
+```gherkin
+Given path '/api/users'
+And header Authorization = 'Bearer ' + token
+When method GET                    # Authorization 헤더 포함
+
+Given path '/api/users'
+When method GET                    # Authorization 헤더 없음 (다시 적어야 함)
+```
+
+> **주의:** feature 안에서 `configure headers` 를 쓰면 `karate-config.js` 의 설정에 **추가되는 것이 아니라 통째로 교체**됩니다.
+> 위 Background 예시처럼 쓰면 `Accept: application/json` 헤더가 빠집니다.
+> 공통 헤더를 유지하려면 함께 적어 주세요.
+>
+> ```gherkin
+> * configure headers = { Authorization: 'Bearer test-token', Accept: 'application/json' }
+> ```
+
+### 5-5. 쿼리 파라미터와 쿠키: `param` / `cookie`
+
+헤더와 같은 모양으로 쓰고, 적용 범위도 같습니다 (다음 요청 1번만).
+
+```gherkin
+Given path '/api/users'
+And param page = 1                       # ?page=1
+And params { size: 10, sort: 'name' }    # &size=10&sort=name
+And cookie session = 'abc123'            # Cookie: session=abc123
+When method GET
+```
+
+| 대상 | 하나 | 여러 개 |
+|------|------|---------|
+| 헤더 | `header` | `headers` |
+| 쿼리 파라미터 | `param` | `params` |
+| 쿠키 | `cookie` | `cookies` |
+
+> 요청이 실제로 어떤 헤더로 나갔는지 보고 싶다면 `* print karate.prevRequest.headers` 로 직전 요청을 출력해 보세요.
+
+---
+
+## 6. 응답에서 원하는 값 꺼내기
 
 이 프로젝트의 목록 응답은 다음과 같다고 해봅시다.
 
@@ -281,11 +373,11 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 
 ---
 
-## 6. `match` 완전 정복
+## 7. `match` 완전 정복
 
 `match` 는 Karate 의 가장 강력한 기능입니다. 연산자별로 정리해 보겠습니다.
 
-### 6-1. 연산자 한눈에 보기
+### 7-1. 연산자 한눈에 보기
 
 | 연산자 | 의미 | 예시 |
 |--------|------|------|
@@ -298,7 +390,7 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 | `contains deep` | 중첩 객체까지 부분 포함 | `match x contains deep { a: { b: 1 } }` |
 | `match each` | 배열의 모든 원소 검사 | `match each list == '#number'` |
 
-### 6-2. `==` 는 "정확히 같다" 입니다
+### 7-2. `==` 는 "정확히 같다" 입니다
 
 초보자가 가장 많이 실수하는 부분입니다.
 
@@ -313,7 +405,7 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 - **응답 전체 모양을 고정하고 싶다** → `==` + 마커(`#number` 등)
 - **관심 있는 필드만 확인하고 싶다** → `contains`
 
-### 6-3. 배열 검증
+### 7-3. 배열 검증
 
 ```gherkin
 * def list = [1, 2, 3]
@@ -332,7 +424,7 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 * match list == '#[3] #number'           # 숫자 3개짜리 배열
 ```
 
-### 6-4. `match each` 로 모든 원소 검사
+### 7-4. `match each` 로 모든 원소 검사
 
 ```gherkin
 * def users = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
@@ -343,7 +435,7 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 
 목록 API 응답의 모든 항목이 같은 모양인지 검증할 때 씁니다.
 
-### 6-5. 마커 심화
+### 7-5. 마커 심화
 
 01 문서의 기본 마커 표에 더해, 실무에서 자주 쓰는 마커들입니다.
 
@@ -371,7 +463,7 @@ Karate 는 원래 변수의 타입(숫자, 객체, 배열 등)을 그대로 보�
 
 `#` 하나는 "반드시 있어야 함", `##` 두 개는 "없어도 됨"이라고 기억하면 쉽습니다.
 
-### 6-6. 스키마를 변수로 재사용하기
+### 7-6. 스키마를 변수로 재사용하기
 
 같은 모양을 여러 번 검증한다면 변수로 빼두세요.
 
@@ -393,7 +485,7 @@ Scenario: 목록 조회
   And match each response.data == userSchema
 ```
 
-### 6-7. 응답 헤더 검증
+### 7-7. 응답 헤더 검증
 
 ```gherkin
 And match header Content-Type contains 'application/json'
@@ -401,21 +493,59 @@ And match header Content-Type contains 'application/json'
 
 헤더 이름은 대소문자를 구분하지 않습니다.
 
-### 6-8. `match` vs `assert`
+### 7-8. `match` vs `assert`
+
+`assert` 는 뒤에 오는 **JavaScript 조건식**을 평가해서 `true` 면 통과, `false` 면 실패시킵니다.
+
+```gherkin
+* def age = 25
+* assert age > 18                                       # 크기 비교
+* assert age >= 20 && age < 30                          # 논리 연산 (&&, ||, !)
+* assert response.data.length > 0                       # 배열 길이
+* assert response.data.name.startsWith('Al')            # JS 메서드 (includes, startsWith ...)
+* assert responseStatus == 200 || responseStatus == 201 # 여러 값 중 하나
+* assert responseTime < 5000                            # 응답 시간 (ms)
+```
+
+같은 검사를 `match` 로도 쓸 수 있습니다.
 
 ```gherkin
 * assert age > 18                         # 참/거짓만 판단
 * match age == '#? _ > 18'                # 같은 의미지만 실패 메시지가 더 자세함
 ```
 
-`assert` 는 실패 시 "조건식이 참이 아니다" 정도만 알려줍니다.
+둘의 차이는 다음과 같습니다.
+
+| | `assert` | `match` |
+|------|------|------|
+| 받는 것 | JS boolean 식 | 실제 값 vs 기대 값 |
+| `>` `<` 크기 비교 | 바로 가능 | `'#? _ > 18'` 형태로 가능 |
+| JSON 구조 비교, 타입 마커(`#number` 등) | 불가 | 가능 |
+| 실패 메시지 | 조건식이 참이 아니라는 것만 알려줌 | 실제 값, 기대 값, 다른 경로를 보여줌 |
+
+실패했을 때의 메시지 차이가 가장 큽니다.
+
+```gherkin
+* def age = 15
+* assert age > 18              # 실패 메시지에 조건식만 나옴 → age 가 몇이었는지 안 보임
+* match age == '#? _ > 18'     # 실패 메시지에 실제 값 15 와 기대 조건이 함께 나옴
+```
+
 가능하면 **`match` 를 우선 사용**하세요. 실제 값과 기대 값을 함께 보여줘서 디버깅이 쉽습니다.
+`assert` 는 여러 변수를 섞은 조건이나 `responseTime` 같은 간단한 숫자 비교처럼,
+`match` 로 쓰면 오히려 읽기 어려워질 때 씁니다.
+
+실패 메시지를 직접 남기고 싶다면 `karate.fail()` 을 조건과 함께 씁니다 (8-2 참고).
+
+```gherkin
+* if (response.data.length == 0) karate.fail('사용자 목록이 비어 있음')
+```
 
 ---
 
-## 7. JavaScript 함께 쓰기
+## 8. JavaScript 함께 쓰기
 
-### 7-1. 함수 정의와 호출
+### 8-1. 함수 정의와 호출
 
 ```gherkin
 * def double = function(x){ return x * 2 }
@@ -424,7 +554,7 @@ And match header Content-Type contains 'application/json'
 * def r2 = call double 3                  # 6 (call 키워드로 호출)
 ```
 
-### 7-2. 자주 쓰는 `karate` 내장 함수
+### 8-2. 자주 쓰는 `karate` 내장 함수
 
 | 함수 | 설명 | 예시 |
 |------|------|------|
@@ -437,7 +567,7 @@ And match header Content-Type contains 'application/json'
 | `karate.jsonPath(x, path)` | JsonPath 조회 | `karate.jsonPath(response, '$.data[0].id')` |
 | `karate.fail(msg)` | 테스트를 즉시 실패시킴 | `karate.fail('예상치 못한 상태')` |
 
-### 7-3. 조건 분기
+### 8-3. 조건 분기
 
 Karate 는 "테스트는 단순해야 한다"는 철학이라 `if` 블록 문법이 없습니다.
 꼭 필요하면 JS 한 줄로 표현합니다.
@@ -450,7 +580,7 @@ Karate 는 "테스트는 단순해야 한다"는 철학이라 `if` 블록 문법
 
 ---
 
-## 8. Java 함께 쓰기
+## 9. Java 함께 쓰기
 
 JVM 위에서 돌기 때문에 Java 클래스를 바로 쓸 수 있습니다.
 
@@ -471,7 +601,7 @@ JVM 위에서 돌기 때문에 Java 클래스를 바로 쓸 수 있습니다.
 
 ---
 
-## 9. 초보자가 자주 하는 실수
+## 10. 초보자가 자주 하는 실수
 
 | 증상 | 원인 | 해결 |
 |------|------|------|
