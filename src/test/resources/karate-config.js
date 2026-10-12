@@ -16,5 +16,9 @@ function fn() {
     // Increase read timeout for slower CI environments
     karate.configure('readTimeout', 10000);
 
+    karate.configure('afterScenario', function() {
+        karate.log(`After scenario ${karate.info.scenarioName} hook executed`);
+    });
+
     return config;
 }
